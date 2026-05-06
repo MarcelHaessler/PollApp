@@ -1,0 +1,170 @@
+<div class="create-page">
+  <header class="create-page__header">
+    <app-logo variant="dark" />
+  </header>
+
+  <div class="create-page__shell">
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="create">
+        <div class="create__top">
+          <div class="create__title-block">
+            <span class="create__pill">Draft</span>
+            <h1 class="create__heading heading-display--lg">Create new survey</h1>
+          </div>
+          <a routerLink="/" class="create__cancel">
+            Cancel
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path
+                d="M2 2l10 10M12 2L2 12"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </a>
+        </div>
+
+        <div class="create__panel">
+          <div class="create__grid">
+            <div class="create__field">
+              <label class="create__label" for="title">
+                Survey name <span class="create__required">*</span>
+              </label>
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                class="create__input"
+                placeholder="My team survey"
+              />
+              @if (form.controls.title.touched && form.controls.title.invalid) {
+                <span class="create__error">Mindestens 3 Zeichen.</span>
+              }
+            </div>
+
+            <div class="create__field">
+              <label class="create__label" for="category">Choose category</label>
+              <select id="category" formControlName="categoryId" class="create__input">
+                <option value="">—</option>
+                @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="create__field">
+              <label class="create__label" for="endDate">
+                Set end date <span class="create__optional">(optional)</span>
+              </label>
+              <input
+                id="endDate"
+                type="date"
+                formControlName="endDate"
+                class="create__input"
+              />
+            </div>
+
+            <div class="create__field create__field--wide">
+              <label class="create__label" for="description">
+                Describing text <span class="create__optional">(optional)</span>
+              </label>
+              <textarea
+                id="description"
+                formControlName="description"
+                class="create__input create__input--textarea"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="create__questions" formArrayName="questions">
+            @for (question of questions.controls; track $index; let qi = $index) {
+              <fieldset class="question" [formGroupName]="qi">
+                <div class="question__header">
+                  <span class="question__index">{{ qi + 1 }}. Question</span>
+                  @if (questions.length > 1) {
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      aria-label="Frage entfernen"
+                      (click)="removeQuestion(qi)"
+                    >
+                      <img src="/icons/delete.svg" alt="" width="18" height="20" />
+                    </button>
+                  }
+                </div>
+                <input
+                  type="text"
+                  formControlName="text"
+                  class="create__input"
+                  placeholder="Which date would work best for you?"
+                />
+
+                <div class="question__answers-head">
+                  <span class="create__label">Answers <span class="create__required">*</span></span>
+                  <label class="checkbox">
+                    <input type="checkbox" formControlName="allowMultiple" />
+                    <span>Allow multiple answers.</span>
+                  </label>
+                </div>
+
+                <div class="question__options" formArrayName="options">
+                  @for (opt of options(qi).controls; track $index; let oi = $index) {
+                    <div class="option" [formGroupName]="oi">
+                      <span class="option__letter">{{ letter(oi) }}.</span>
+                      <input
+                        type="text"
+                        formControlName="text"
+                        class="create__input option__input"
+                        [placeholder]="'Answer ' + letter(oi)"
+                      />
+                      @if (options(qi).length > 2) {
+                        <button
+                          type="button"
+                          class="icon-btn"
+                          aria-label="Antwort entfernen"
+                          (click)="removeOption(qi, oi)"
+                        >
+                          <img src="/icons/delete.svg" alt="" width="18" height="20" />
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <button type="button" class="link-btn" (click)="addOption(qi)">
+                  Add answer
+                  <img src="/icons/add_circle.svg" alt="" width="18" height="18" />
+                </button>
+              </fieldset>
+            }
+
+            <button type="button" class="btn btn--secondary btn--centered" (click)="addQuestion()">
+              Add next question
+              <img src="/icons/add_circle.svg" alt="" width="18" height="18" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      @if (error()) {
+        <p class="create__error create__error--block">{{ error() }}</p>
+      }
+
+      <div class="create__actions">
+        <button type="submit" class="btn btn--primary" [disabled]="submitting()">
+          {{ submitting() ? 'Publishing…' : 'Publish' }}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M5 12l5 5L20 7"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

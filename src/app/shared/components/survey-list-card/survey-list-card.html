@@ -1,0 +1,17 @@
+@if (disabled()) {
+  <div class="survey-card survey-card--disabled" aria-disabled="true">
+    <span class="survey-card__category">{{ survey().categoryName }}</span>
+    <h3 class="survey-card__title">{{ survey().title }}</h3>
+    @if (survey().endDate) {
+      <span class="survey-card__badge">Ended</span>
+    }
+  </div>
+} @else {
+  <a [routerLink]="['/survey', survey().id]" class="survey-card">
+    <span class="survey-card__category">{{ survey().categoryName }}</span>
+    <h3 class="survey-card__title">{{ survey().title }}</h3>
+    @if (survey().endDate) {
+      <span class="survey-card__badge">{{ survey().endDate | endsIn }}</span>
+    }
+  </a>
+}

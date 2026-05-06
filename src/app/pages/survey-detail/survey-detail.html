@@ -1,0 +1,166 @@
+<app-header [showCreate]="true" />
+
+<main class="detail">
+  @if (loading()) {
+    <p class="status">Loading…</p>
+  } @else if (error() && !survey()) {
+    <p class="status status--error">{{ error() }}</p>
+    <p class="status">
+      <a routerLink="/" class="link-back">← Zurück</a>
+    </p>
+  } @else if (survey()) {
+    @let s = survey()!;
+
+    <div class="detail__layout">
+      <article class="detail__card">
+        <div class="detail__head">
+          <div class="detail__chip-row">
+            <span class="detail__chip">{{ isEnded() ? 'Ended' : 'Published' }}</span>
+            @if (canVote()) {
+              <button
+                type="button"
+                class="detail__close"
+                aria-label="Schliessen"
+                routerLink="/"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M2 2l10 10M12 2L2 12"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            }
+          </div>
+          <div class="detail__meta">
+            @if (s.endDate) {
+              <span>Ends on {{ published() }}</span>
+            }
+            @if (s.categoryName) {
+              <span>Category: {{ s.categoryName }}</span>
+            }
+          </div>
+          <h1 class="detail__title heading-display--lg">{{ s.title }}</h1>
+          @if (s.description) {
+            <p class="detail__desc">{{ s.description }}</p>
+          }
+        </div>
+
+        <div class="detail__questions">
+          @for (q of s.questions; track q.id; let qi = $index) {
+            <fieldset class="qblock">
+              <legend class="qblock__legend">{{ qi + 1 }}. {{ q.text }}</legend>
+              @if (q.allowMultiple) {
+                <p class="qblock__hint">More than one answers are possible.</p>
+              }
+              <ul class="qblock__options">
+                @for (opt of q.options; track opt.id; let oi = $index) {
+                  <li>
+                    <label
+                      class="opt"
+                      [class.opt--checked]="isSelected(q.id, opt.id)"
+                      [class.opt--disabled]="!canVote()"
+                    >
+                      <input
+                        [type]="q.allowMultiple ? 'checkbox' : 'radio'"
+                        [name]="'q-' + q.id"
+                        [checked]="isSelected(q.id, opt.id)"
+                        [disabled]="!canVote()"
+                        (change)="toggleOption(q, opt.id)"
+                      />
+                      <span class="opt__box" aria-hidden="true">
+                        @if (isSelected(q.id, opt.id)) {
+                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                            <path
+                              d="M2 7l3.5 3.5L12 4"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        }
+                      </span>
+                      <span class="opt__text">
+                        <strong>{{ letter(oi) }}.</strong> {{ opt.text }}
+                      </span>
+                    </label>
+                  </li>
+                }
+              </ul>
+            </fieldset>
+          }
+        </div>
+
+        @if (error()) {
+          <p class="detail__error">{{ error() }}</p>
+        }
+
+        <div class="detail__actions">
+          @if (hasVoted()) {
+            <span class="detail__voted">✓ Du hast abgestimmt.</span>
+          } @else if (isEnded()) {
+            <span class="detail__voted">Diese Umfrage ist beendet.</span>
+          } @else {
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="submitting()"
+              (click)="submitVote()"
+            >
+              {{ submitting() ? 'Sending…' : 'Complete survey' }}
+            </button>
+          }
+        </div>
+      </article>
+
+      <aside class="detail__results">
+        <div class="detail__results-toggle">
+          <button
+            type="button"
+            class="results-toggle"
+            (click)="toggleMobileResults()"
+          >
+            {{ showResultsMobile() ? 'Close results' : 'See results' }}
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              [class.is-open]="showResultsMobile()"
+            >
+              <path
+                d="M3 5l4 4 4-4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="detail__results-body"
+          [class.is-open]="showResultsMobile()"
+        >
+          <h2 class="detail__results-title">
+            Survey results
+            <span class="detail__live">LIVE</span>
+          </h2>
+          @if (totalVotes() === 0) {
+            <div class="detail__results-empty">
+              <p class="detail__results-empty-lead">
+                Results will be shown here after participants complete the survey.
+              </p>
+              <p class="detail__results-empty-mid">There are no answears yet.</p>
+            </div>
+          } @else {
+            <app-results-bars [questions]="s.questions" [results]="results()" />
+          }
+        </div>
+      </aside>
+    </div>
+  }
+</main>

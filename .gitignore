@@ -42,3 +42,32 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Design source exports (large image files)
+/design/screens/
+
+# Environment / secrets — never commit credentials
+/src/environments/environment.ts
+/src/environments/environment.local.ts
+.env
+.env.*
+!.env.example
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Catch-all for sensitive files
+*secret*
+*secrets*
+*credentials*
+!*.example.*
+
+# Editor cruft
+*.swp
+*.swo
+.cursor/
+.aider*

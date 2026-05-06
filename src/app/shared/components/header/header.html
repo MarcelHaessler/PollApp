@@ -1,0 +1,8 @@
+<header class="header">
+  <div class="header__inner">
+    <app-logo [variant]="logoVariant()" />
+    @if (showCreate()) {
+      <a routerLink="/survey/new" class="header__cta">Create survey</a>
+    }
+  </div>
+</header>

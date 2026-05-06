@@ -1,0 +1,25 @@
+@if (totalVotes() === 0) {
+  <p class="results__empty">There are no answears yet.</p>
+} @else {
+  <div class="results">
+    @for (question of questions(); track question.id; let qi = $index) {
+      <div class="results__group">
+        <h3 class="results__question">{{ qi + 1 }}. {{ question.text }}</h3>
+        @let result = results().get(question.id);
+        @if (result) {
+          <ul class="results__list">
+            @for (option of result.options; track option.answerOptionId; let oi = $index) {
+              <li class="results__row">
+                <span class="results__letter">{{ letter(oi) }}</span>
+                <div class="results__bar" aria-hidden="true">
+                  <span class="results__bar-fill" [style.width.%]="option.percentage"></span>
+                </div>
+                <span class="results__percent">{{ option.percentage }}%</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  </div>
+}

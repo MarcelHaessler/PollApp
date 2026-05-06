@@ -1,0 +1,86 @@
+<app-header />
+
+<main class="home">
+  <section class="hero">
+    <div class="hero__copy">
+      <h1 class="hero__title heading-display--xl">
+        Collect Feedback,<br />Unlock Ideas
+      </h1>
+      <p class="hero__lead">
+        Create and share surveys in minutes — from team events to workplace
+        culture. Collect opinions, engage your audience, and turn feedback into
+        action.
+      </p>
+      <a routerLink="/survey/new" class="hero__cta">New survey</a>
+    </div>
+    <img class="hero__illu" src="/img/phone.png" alt="" aria-hidden="true" />
+  </section>
+
+  <section class="surveys">
+    <h2 class="surveys__heading heading-display--lg">Your surveys</h2>
+
+    @if (loading()) {
+      <p class="status">Loading…</p>
+    } @else if (error()) {
+      <p class="status status--error">{{ error() }}</p>
+    } @else {
+      @if (endingSoon().length > 0) {
+        <h3 class="surveys__subheading">Ending soon surveys</h3>
+        <div class="highlights">
+          @for (survey of endingSoon(); track survey.id; let i = $index) {
+            <app-highlight-card [survey]="survey" [variant]="highlightVariant(i)" />
+          }
+        </div>
+      }
+
+      <div class="surveys__toolbar">
+        <app-tabs [items]="tabs" [activeId]="activeTab()" (select)="onTabChange($event)" />
+
+        <label class="surveys__sort">
+          <select
+            [value]="selectedCategory() ?? ''"
+            (change)="onCategoryChange($any($event.target).value)"
+          >
+            <option value="">Sort by categories</option>
+            @for (cat of categories(); track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+          <svg
+            class="surveys__sort-chev"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M3 5l4 4 4-4"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </label>
+      </div>
+
+      @if (listSurveys().length === 0) {
+        <p class="status">
+          {{ activeTab() === 'active' ? 'No active surveys.' : 'No past surveys.' }}
+        </p>
+      } @else {
+        <ul class="survey-list">
+          @for (survey of listSurveys(); track survey.id) {
+            <li>
+              <app-survey-list-card
+                [survey]="survey"
+                [disabled]="activeTab() === 'past'"
+              />
+            </li>
+          }
+        </ul>
+      }
+    }
+  </section>
+</main>
