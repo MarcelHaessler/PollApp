@@ -8,6 +8,8 @@ jobs:
   web-deploy:
     name: Build & Sync Files
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
@@ -41,6 +43,6 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftpes
           local-dir: ./dist/pollApp/browser/
           server-dir: /public_html/pollapp/
