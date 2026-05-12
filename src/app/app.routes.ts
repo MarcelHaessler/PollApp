@@ -6,11 +6,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/home').then((m) => m.HomePage),
   },
   {
-    path: 'survey/new',
-    loadComponent: () =>
-      import('./pages/create-survey/create-survey').then((m) => m.CreateSurveyPage),
-  },
-  {
     path: 'survey/:id',
     loadComponent: () =>
       import('./pages/survey-detail/survey-detail').then((m) => m.SurveyDetailPage),

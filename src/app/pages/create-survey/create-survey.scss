@@ -1,30 +1,3 @@
-.create-page {
-  min-height: 100vh;
-  background: #ffffff;
-  color: var(--color-text-on-light);
-}
-
-.create-page__header {
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-8);
-
-  @media (max-width: 768px) {
-    padding: var(--space-5) var(--space-5);
-  }
-}
-
-.create-page__shell {
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: 0 var(--space-8) var(--space-8) var(--space-8);
-
-  @media (max-width: 768px) {
-    padding: 0;
-    margin-bottom: var(--space-8);
-  }
-}
-
 .create {
   background: var(--color-bg);
   color: var(--color-text-on-dark);
@@ -33,7 +6,6 @@
 
   @media (max-width: 768px) {
     padding: var(--space-6) var(--space-5);
-    // border-radius: var(--radius-md) var(--radius-lg) var(--radius-md) var(--radius-md);
   }
 }
 
@@ -92,7 +64,6 @@
   }
 }
 
-/* Top grid: left col (name + date/category) | right col (description) */
 .create__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -110,7 +81,6 @@
   gap: var(--space-5);
 }
 
-/* End date + category side by side */
 .create__inline-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -121,7 +91,6 @@
   }
 }
 
-/* Input + delete icon wrapper */
 .create__input-wrap {
   display: flex;
   align-items: center;
@@ -134,7 +103,6 @@
   }
 }
 
-/* Textarea variant: icon sits at top */
 .create__input-wrap--grow {
   align-items: flex-start;
   flex: 1;
@@ -145,7 +113,6 @@
   }
 }
 
-/* Description field on the right spans full height */
 .create__field--description {
   display: flex;
   flex-direction: column;
@@ -219,7 +186,6 @@
   margin-top: var(--space-4);
 }
 
-/* Questions: list on left, "Add next question" button on right */
 .create__questions-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;

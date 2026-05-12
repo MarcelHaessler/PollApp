@@ -1,4 +1,4 @@
-<app-header [showCreate]="true" logoVariant="dark" />
+<app-header logoVariant="dark" />
 
 <main class="detail">
   @if (loading()) {
@@ -6,7 +6,7 @@
   } @else if (error() && !survey()) {
     <p class="status status--error">{{ error() }}</p>
     <p class="status">
-      <a routerLink="/" class="link-back">← Zurück</a>
+      <a routerLink="/" class="link-back">← Back</a>
     </p>
   } @else if (survey()) {
     @let s = survey()!;
@@ -20,7 +20,7 @@
               <button
                 type="button"
                 class="detail__close"
-                aria-label="Schliessen"
+                aria-label="Close"
                 routerLink="/"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -36,7 +36,7 @@
           </div>
           <div class="detail__meta">
             @if (s.endDate) {
-              <span>Ends on {{ published() }}</span>
+              <span>Ends on {{ formattedEndDate() }}</span>
             }
             @if (s.categoryName) {
               <span>Category: {{ s.categoryName }}</span>
@@ -49,29 +49,29 @@
         </div>
 
         <div class="detail__questions">
-          @for (q of s.questions; track q.id; let qi = $index) {
+          @for (question of s.questions; track question.id; let questionIndex = $index) {
             <fieldset class="qblock">
-              <legend class="qblock__legend">{{ qi + 1 }}. {{ q.text }}</legend>
-              @if (q.allowMultiple) {
-                <p class="qblock__hint">More than one answers are possible.</p>
+              <legend class="qblock__legend">{{ questionIndex + 1 }}. {{ question.text }}</legend>
+              @if (question.allowMultiple) {
+                <p class="qblock__hint">More than one answer is possible.</p>
               }
               <ul class="qblock__options">
-                @for (opt of q.options; track opt.id; let oi = $index) {
+                @for (option of question.options; track option.id; let optionIndex = $index) {
                   <li>
                     <label
                       class="opt"
-                      [class.opt--checked]="isSelected(q.id, opt.id)"
+                      [class.opt--checked]="isSelected(question.id, option.id)"
                       [class.opt--disabled]="!canVote()"
                     >
                       <input
-                        [type]="q.allowMultiple ? 'checkbox' : 'radio'"
-                        [name]="'q-' + q.id"
-                        [checked]="isSelected(q.id, opt.id)"
+                        [type]="question.allowMultiple ? 'checkbox' : 'radio'"
+                        [name]="'q-' + question.id"
+                        [checked]="isSelected(question.id, option.id)"
                         [disabled]="!canVote()"
-                        (change)="toggleOption(q, opt.id)"
+                        (change)="toggleOption(question, option.id)"
                       />
                       <span class="opt__box" aria-hidden="true">
-                        @if (isSelected(q.id, opt.id)) {
+                        @if (isSelected(question.id, option.id)) {
                           <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
                             <path
                               d="M2 7l3.5 3.5L12 4"
@@ -84,7 +84,7 @@
                         }
                       </span>
                       <span class="opt__text">
-                        <strong>{{ letter(oi) }}.</strong> {{ opt.text }}
+                        <strong>{{ letterFromIndex(optionIndex) }}.</strong> {{ option.text }}
                       </span>
                     </label>
                   </li>
@@ -100,9 +100,9 @@
 
         <div class="detail__actions">
           @if (hasVoted()) {
-            <span class="detail__voted">✓ Du hast abgestimmt.</span>
+            <span class="detail__voted">✓ You have voted.</span>
           } @else if (isEnded()) {
-            <span class="detail__voted">Diese Umfrage ist beendet.</span>
+            <span class="detail__voted">This survey has ended.</span>
           } @else {
             <button
               type="button"
@@ -154,7 +154,7 @@
               <p class="detail__results-empty-lead">
                 Results will be shown here after participants complete the survey.
               </p>
-              <p class="detail__results-empty-mid">There are no answears yet.</p>
+              <p class="detail__results-empty-mid">There are no answers yet.</p>
             </div>
           } @else {
             <app-results-bars [questions]="s.questions" [results]="results()" />

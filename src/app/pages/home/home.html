@@ -1,24 +1,35 @@
 <app-header />
 
+@if (showCreateModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <app-create-survey
+        (created)="onSurveyCreated($event)"
+        (cancelled)="closeModal()"
+      />
+    </div>
+  </div>
+}
+
 <main class="home">
   <section class="hero">
     <h1 class="hero__title heading-display--xl">
       Collect Feedback,<br />Unlock Ideas
     </h1>
-    <img class="hero__illu" src="/img/phone.png" alt="PollApp auf dem Smartphone" />
+    <img class="hero__illu" src="/img/phone.png" alt="PollApp on a smartphone" />
     <div class="hero__copy">
       <p class="hero__lead">
         Create and share surveys in minutes — from team events to workplace
         culture. Collect opinions, engage your audience, and turn feedback into
         action.
       </p>
-      <a routerLink="/survey/new" class="hero__cta">
+      <button type="button" class="hero__cta" (click)="openModal()">
         New survey
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
           <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-      </a>
+      </button>
     </div>
   </section>
 
@@ -33,8 +44,8 @@
       @if (endingSoon().length > 0) {
         <h3 class="surveys__subheading">Ending soon surveys</h3>
         <div class="highlights">
-          @for (survey of endingSoon(); track survey.id; let i = $index) {
-            <app-highlight-card [survey]="survey" [variant]="highlightVariant(i)" />
+          @for (survey of endingSoon(); track survey.id; let index = $index) {
+            <app-highlight-card [survey]="survey" [variant]="highlightVariant(index)" />
           }
         </div>
       }
@@ -48,8 +59,8 @@
             (change)="onCategoryChange($any($event.target).value)"
           >
             <option value="">Sort by categories</option>
-            @for (cat of categories(); track cat) {
-              <option [value]="cat">{{ cat }}</option>
+            @for (category of categories(); track category) {
+              <option [value]="category">{{ category }}</option>
             }
           </select>
           <svg
@@ -81,6 +92,7 @@
             <li>
               <app-survey-list-card
                 [survey]="survey"
+                [disabled]="activeTab() === 'past'"
               />
             </li>
           }

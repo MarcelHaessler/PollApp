@@ -1,6 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -9,13 +7,13 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { LogoComponent } from '../../shared/components/logo/logo';
 import { SurveyService } from '../../core/services/survey.service';
-import { Category } from '../../core/models/survey.model';
+import { Category, CreateSurveyInput } from '../../core/models/survey.model';
 
 interface OptionForm {
   text: FormControl<string>;
 }
+
 interface QuestionForm {
   text: FormControl<string>;
   allowMultiple: FormControl<boolean>;
@@ -25,20 +23,22 @@ interface QuestionForm {
 @Component({
   selector: 'app-create-survey',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, LogoComponent],
+  imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './create-survey.html',
   styleUrl: './create-survey.scss',
 })
-export class CreateSurveyPage {
+export class CreateSurveyComponent {
   private fb = inject(FormBuilder);
   private surveyService = inject(SurveyService);
-  private router = inject(Router);
-  private destroyRef = inject(DestroyRef);
+
+  readonly created = output<string>();
+  readonly cancelled = output();
 
   readonly categories = signal<Category[]>([]);
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
+  readonly today = new Date().toISOString().split('T')[0];
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -49,9 +49,6 @@ export class CreateSurveyPage {
   });
 
   constructor() {
-    const html = inject(DOCUMENT).documentElement;
-    html.style.background = '#ffffff';
-    this.destroyRef.onDestroy(() => (html.style.background = ''));
     this.loadCategories();
   }
 
@@ -59,81 +56,93 @@ export class CreateSurveyPage {
     return this.form.controls.questions;
   }
 
-  options(qIdx: number): FormArray<FormGroup<OptionForm>> {
-    return this.questions.at(qIdx).controls.options;
+  options(questionIndex: number): FormArray<FormGroup<OptionForm>> {
+    return this.questions.at(questionIndex).controls.options;
   }
 
-  letter(idx: number): string {
-    return String.fromCharCode(65 + idx);
+  letterFromIndex(index: number): string {
+    return String.fromCharCode(65 + index);
   }
 
-  addQuestion() {
+  addQuestion(): void {
     this.questions.push(this.buildQuestion());
   }
 
-  removeQuestion(idx: number) {
+  removeQuestion(questionIndex: number): void {
     if (this.questions.length === 1) return;
-    this.questions.removeAt(idx);
+    this.questions.removeAt(questionIndex);
   }
 
-  clearQuestion(qIdx: number) {
-    this.questions.at(qIdx).controls.text.reset();
-    this.options(qIdx).controls.forEach((opt) => opt.controls.text.reset());
+  clearQuestion(questionIndex: number): void {
+    this.questions.at(questionIndex).controls.text.reset();
+    this.options(questionIndex).controls.forEach((option) => option.controls.text.reset());
   }
 
-  addOption(qIdx: number) {
-    this.options(qIdx).push(this.buildOption());
+  addOption(questionIndex: number): void {
+    this.options(questionIndex).push(this.buildOption());
   }
 
-  removeOption(qIdx: number, oIdx: number) {
-    if (this.options(qIdx).length <= 2) return;
-    this.options(qIdx).removeAt(oIdx);
+  removeOption(questionIndex: number, optionIndex: number): void {
+    if (this.options(questionIndex).length <= 2) return;
+    this.options(questionIndex).removeAt(optionIndex);
   }
 
-  async submit() {
+  async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    const value = this.form.getRawValue();
-    const validQuestions = value.questions
-      .map((q) => ({
-        text: q.text.trim(),
-        allowMultiple: q.allowMultiple,
-        options: q.options
-          .map((o) => ({ text: o.text.trim() }))
-          .filter((o) => o.text.length > 0),
-      }))
-      .filter((q) => q.text.length > 0 && q.options.length >= 2);
-
+    const validQuestions = this.getValidQuestions();
     if (validQuestions.length === 0) {
       this.error.set('Please add at least one question with two answers.');
       return;
     }
+    await this.saveSurvey(validQuestions);
+  }
 
+  private getValidQuestions(): CreateSurveyInput['questions'] {
+    return this.form.getRawValue().questions
+      .map((question) => ({
+        text: question.text.trim(),
+        allowMultiple: question.allowMultiple,
+        options: question.options
+          .map((option) => ({ text: option.text.trim() }))
+          .filter((option) => option.text.length > 0),
+      }))
+      .filter((question) => question.text.length > 0 && question.options.length >= 2);
+  }
+
+  private buildSurveyPayload(validQuestions: CreateSurveyInput['questions']): CreateSurveyInput {
+    const value = this.form.getRawValue();
+    return {
+      title: value.title.trim(),
+      description: value.description.trim() || null,
+      categoryId: value.categoryId || null,
+      endDate: value.endDate ? new Date(value.endDate).toISOString() : null,
+      questions: validQuestions,
+    };
+  }
+
+  private async saveSurvey(validQuestions: CreateSurveyInput['questions']): Promise<void> {
     this.submitting.set(true);
     this.error.set(null);
     try {
-      const surveyId = await this.surveyService.createSurvey({
-        title: value.title.trim(),
-        description: value.description.trim() || null,
-        categoryId: value.categoryId || null,
-        endDate: value.endDate ? new Date(value.endDate).toISOString() : null,
-        questions: validQuestions,
-      });
-      this.router.navigate(['/survey', surveyId]);
-    } catch (e: unknown) {
-      this.error.set(e instanceof Error ? e.message : 'Could not create survey.');
+      const payload = this.buildSurveyPayload(validQuestions);
+      const surveyId = await this.surveyService.createSurvey(payload);
+      this.created.emit(surveyId);
+    } catch (error: unknown) {
+      this.error.set(error instanceof Error ? error.message : 'Could not create survey.');
     } finally {
       this.submitting.set(false);
     }
   }
 
-  private async loadCategories() {
+  private async loadCategories(): Promise<void> {
     try {
-      const data = await this.surveyService.listCategories();
-      this.categories.set(data);
-    } catch {
+      const categories = await this.surveyService.listCategories();
+      this.categories.set(categories);
+    } catch (error: unknown) {
+      console.error('Failed to load categories:', error);
     }
   }
 
@@ -141,10 +150,7 @@ export class CreateSurveyPage {
     return this.fb.nonNullable.group({
       text: this.fb.nonNullable.control('', Validators.required),
       allowMultiple: this.fb.nonNullable.control(false),
-      options: this.fb.array<FormGroup<OptionForm>>([
-        this.buildOption(),
-        this.buildOption(),
-      ]),
+      options: this.fb.array<FormGroup<OptionForm>>([this.buildOption(), this.buildOption()]),
     });
   }
 

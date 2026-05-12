@@ -30,16 +30,7 @@ export class SurveyService {
       .eq('status', 'published')
       .order('end_date', { ascending: true, nullsFirst: false });
     if (error) throw error;
-    return (data ?? []).map((row: any) => ({
-      id: row.id,
-      title: row.title,
-      description: row.description,
-      categoryId: row.category_id,
-      categoryName: row.categories?.name ?? null,
-      endDate: row.end_date,
-      status: row.status,
-      createdAt: row.created_at,
-    }));
+    return (data ?? []).map((row: any) => this.mapSurvey(row));
   }
 
   async getSurveyDetail(surveyId: string): Promise<SurveyDetail | null> {
@@ -55,114 +46,21 @@ export class SurveyService {
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    const row = data as any;
-    return {
-      id: row.id,
-      title: row.title,
-      description: row.description,
-      categoryId: row.category_id,
-      categoryName: row.categories?.name ?? null,
-      endDate: row.end_date,
-      status: row.status,
-      createdAt: row.created_at,
-      questions: (row.questions ?? [])
-        .slice()
-        .sort((a: any, b: any) => a.position - b.position)
-        .map((q: any) => ({
-          id: q.id,
-          surveyId: row.id,
-          position: q.position,
-          text: q.text,
-          allowMultiple: q.allow_multiple,
-          options: (q.answer_options ?? [])
-            .slice()
-            .sort((a: any, b: any) => a.position - b.position)
-            .map((o: any) => ({
-              id: o.id,
-              questionId: q.id,
-              position: o.position,
-              text: o.text,
-            })),
-        })),
-    };
+    return this.mapSurveyDetail(data as any);
   }
 
   async createSurvey(input: CreateSurveyInput): Promise<string> {
-    const { data: surveyRow, error: surveyError } = await this.supabase
-      .from('surveys')
-      .insert({
-        title: input.title,
-        description: input.description,
-        category_id: input.categoryId,
-        end_date: input.endDate,
-        status: 'published',
-      })
-      .select('id')
-      .single();
-    if (surveyError) throw surveyError;
-    const surveyId = surveyRow.id as string;
-
-    for (let qIdx = 0; qIdx < input.questions.length; qIdx++) {
-      const q = input.questions[qIdx];
-      const { data: questionRow, error: questionError } = await this.supabase
-        .from('questions')
-        .insert({
-          survey_id: surveyId,
-          position: qIdx + 1,
-          text: q.text,
-          allow_multiple: q.allowMultiple,
-        })
-        .select('id')
-        .single();
-      if (questionError) throw questionError;
-      const questionId = questionRow.id as string;
-
-      const optionRows = q.options.map((o, oIdx) => ({
-        question_id: questionId,
-        position: oIdx + 1,
-        text: o.text,
-      }));
-      if (optionRows.length > 0) {
-        const { error: optionsError } = await this.supabase
-          .from('answer_options')
-          .insert(optionRows);
-        if (optionsError) throw optionsError;
-      }
+    const surveyId = await this.insertSurvey(input);
+    for (let index = 0; index < input.questions.length; index++) {
+      await this.insertQuestion(surveyId, input.questions[index], index);
     }
-
     return surveyId;
   }
 
   async submitVote(input: VoteInput): Promise<void> {
-    const { data: existing } = await this.supabase
-      .from('submissions')
-      .select('id')
-      .eq('survey_id', input.surveyId)
-      .eq('voter_token', input.voterToken)
-      .maybeSingle();
-    if (existing) {
-      throw new Error('Du hast für diese Umfrage bereits abgestimmt.');
-    }
-
-    const { data: submissionRow, error: submissionError } = await this.supabase
-      .from('submissions')
-      .insert({ survey_id: input.surveyId, voter_token: input.voterToken })
-      .select('id')
-      .single();
-    if (submissionError) throw submissionError;
-    const submissionId = submissionRow.id as string;
-
-    const voteRows = input.answers.flatMap((a) =>
-      a.answerOptionIds.map((optionId) => ({
-        submission_id: submissionId,
-        question_id: a.questionId,
-        answer_option_id: optionId,
-      }))
-    );
-    if (voteRows.length === 0) return;
-
-    const { error: votesError } = await this.supabase.from('votes').insert(voteRows);
-    if (votesError) throw votesError;
+    await this.checkAlreadyVoted(input.surveyId, input.voterToken);
+    const submissionId = await this.createSubmission(input.surveyId, input.voterToken);
+    await this.insertVotes(submissionId, input.answers);
   }
 
   async hasVoted(surveyId: string, voterToken: string): Promise<boolean> {
@@ -185,50 +83,178 @@ export class SurveyService {
     return this.buildResults((data ?? []) as any[]);
   }
 
-  private buildResults(rows: any[]): Map<string, QuestionResult> {
-    const byQuestion = new Map<string, QuestionResultRow[]>();
-    for (const r of rows) {
-      const row: QuestionResultRow = {
-        questionId: r.question_id,
-        surveyId: r.survey_id,
-        answerOptionId: r.answer_option_id,
-        optionPosition: r.option_position,
-        optionText: r.option_text,
-        voteCount: Number(r.vote_count ?? 0),
-      };
-      if (!byQuestion.has(row.questionId)) byQuestion.set(row.questionId, []);
-      byQuestion.get(row.questionId)!.push(row);
-    }
-    const result = new Map<string, QuestionResult>();
-    for (const [questionId, options] of byQuestion) {
-      options.sort((a, b) => a.optionPosition - b.optionPosition);
-      const total = options.reduce((sum, o) => sum + o.voteCount, 0);
-      result.set(questionId, {
-        questionId,
-        totalVotes: total,
-        options: options.map((o) => ({
-          answerOptionId: o.answerOptionId,
-          optionPosition: o.optionPosition,
-          optionText: o.optionText,
-          voteCount: o.voteCount,
-          percentage: total > 0 ? Math.round((o.voteCount / total) * 100) : 0,
-        })),
-      });
-    }
-    return result;
-  }
-
   subscribeToResults(surveyId: string, onChange: () => void): () => void {
     const channel = this.supabase
       .channel(`survey-${surveyId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'votes' },
-        () => onChange()
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, () => onChange())
       .subscribe();
-    return () => {
-      this.supabase.removeChannel(channel);
+    return () => { this.supabase.removeChannel(channel); };
+  }
+
+  private mapSurvey(row: any): Survey {
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      categoryId: row.category_id,
+      categoryName: row.categories?.name ?? null,
+      endDate: row.end_date,
+      status: row.status,
+      createdAt: row.created_at,
+    };
+  }
+
+  private mapSurveyDetail(row: any): SurveyDetail {
+    return {
+      ...this.mapSurvey(row),
+      questions: this.mapQuestions(row.questions ?? [], row.id),
+    };
+  }
+
+  private mapQuestions(questions: any[], surveyId: string) {
+    return questions
+      .slice()
+      .sort((a: any, b: any) => a.position - b.position)
+      .map((question: any) => ({
+        id: question.id,
+        surveyId,
+        position: question.position,
+        text: question.text,
+        allowMultiple: question.allow_multiple,
+        options: this.mapOptions(question.answer_options ?? [], question.id),
+      }));
+  }
+
+  private mapOptions(options: any[], questionId: string) {
+    return options
+      .slice()
+      .sort((a: any, b: any) => a.position - b.position)
+      .map((option: any) => ({
+        id: option.id,
+        questionId,
+        position: option.position,
+        text: option.text,
+      }));
+  }
+
+  private async insertSurvey(input: CreateSurveyInput): Promise<string> {
+    const { data, error } = await this.supabase
+      .from('surveys')
+      .insert({
+        title: input.title,
+        description: input.description,
+        category_id: input.categoryId,
+        end_date: input.endDate,
+        status: 'published',
+      })
+      .select('id')
+      .single();
+    if (error) throw error;
+    return data.id as string;
+  }
+
+  private async insertQuestion(
+    surveyId: string,
+    question: CreateSurveyInput['questions'][0],
+    position: number
+  ): Promise<void> {
+    const { data, error } = await this.supabase
+      .from('questions')
+      .insert({
+        survey_id: surveyId,
+        position: position + 1,
+        text: question.text,
+        allow_multiple: question.allowMultiple,
+      })
+      .select('id')
+      .single();
+    if (error) throw error;
+    await this.insertOptions(data.id as string, question.options);
+  }
+
+  private async insertOptions(questionId: string, options: { text: string }[]): Promise<void> {
+    if (options.length === 0) return;
+    const rows = options.map((option, index) => ({
+      question_id: questionId,
+      position: index + 1,
+      text: option.text,
+    }));
+    const { error } = await this.supabase.from('answer_options').insert(rows);
+    if (error) throw error;
+  }
+
+  private async checkAlreadyVoted(surveyId: string, voterToken: string): Promise<void> {
+    const { data } = await this.supabase
+      .from('submissions')
+      .select('id')
+      .eq('survey_id', surveyId)
+      .eq('voter_token', voterToken)
+      .maybeSingle();
+    if (data) throw new Error('You have already voted for this survey.');
+  }
+
+  private async createSubmission(surveyId: string, voterToken: string): Promise<string> {
+    const { data, error } = await this.supabase
+      .from('submissions')
+      .insert({ survey_id: surveyId, voter_token: voterToken })
+      .select('id')
+      .single();
+    if (error) throw error;
+    return data.id as string;
+  }
+
+  private async insertVotes(submissionId: string, answers: VoteInput['answers']): Promise<void> {
+    const rows = answers.flatMap((answer) =>
+      answer.answerOptionIds.map((optionId) => ({
+        submission_id: submissionId,
+        question_id: answer.questionId,
+        answer_option_id: optionId,
+      }))
+    );
+    if (rows.length === 0) return;
+    const { error } = await this.supabase.from('votes').insert(rows);
+    if (error) throw error;
+  }
+
+  private buildResults(rows: any[]): Map<string, QuestionResult> {
+    const byQuestion = this.groupByQuestion(rows);
+    const resultMap = new Map<string, QuestionResult>();
+    for (const [questionId, options] of byQuestion) {
+      resultMap.set(questionId, this.buildQuestionResult(questionId, options));
+    }
+    return resultMap;
+  }
+
+  private groupByQuestion(rows: any[]): Map<string, QuestionResultRow[]> {
+    const map = new Map<string, QuestionResultRow[]>();
+    for (const row of rows) {
+      const item: QuestionResultRow = {
+        questionId: row.question_id,
+        surveyId: row.survey_id,
+        answerOptionId: row.answer_option_id,
+        optionPosition: row.option_position,
+        optionText: row.option_text,
+        voteCount: Number(row.vote_count ?? 0),
+      };
+      if (!map.has(item.questionId)) map.set(item.questionId, []);
+      map.get(item.questionId)!.push(item);
+    }
+    return map;
+  }
+
+  private buildQuestionResult(questionId: string, options: QuestionResultRow[]): QuestionResult {
+    options.sort((a, b) => a.optionPosition - b.optionPosition);
+    const totalVotes = options.reduce((sum, option) => sum + option.voteCount, 0);
+    return {
+      questionId,
+      totalVotes,
+      options: options.map((option) => ({
+        answerOptionId: option.answerOptionId,
+        optionPosition: option.optionPosition,
+        optionText: option.optionText,
+        voteCount: option.voteCount,
+        percentage: totalVotes > 0 ? Math.round((option.voteCount / totalVotes) * 100) : 0,
+      })),
     };
   }
 }

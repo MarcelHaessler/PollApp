@@ -1,224 +1,207 @@
-<div class="create-page">
-  <header class="create-page__header">
-    <app-logo variant="dark" />
-  </header>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="create">
+    <div class="create__top">
+      <div class="create__title-block">
+        <span class="create__pill">Draft</span>
+        <h1 class="create__heading heading-display--lg">Create new survey</h1>
+      </div>
+      <button type="button" class="create__cancel" aria-label="Cancel" (click)="cancelled.emit()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
 
-  <div class="create-page__shell">
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="create">
-        <div class="create__top">
-          <div class="create__title-block">
-            <span class="create__pill">Draft</span>
-            <h1 class="create__heading heading-display--lg">Create new survey</h1>
-          </div>
-          <a routerLink="/" class="create__cancel" aria-label="Abbrechen">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path
-                d="M2 2l10 10M12 2L2 12"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
+    <div class="create__panel">
+      <div class="create__grid">
+        <!-- Left column -->
+        <div class="create__col">
+          <div class="create__field">
+            <label class="create__label" for="title">
+              Survey name <span class="create__required">*</span>
+            </label>
+            <div class="create__input-wrap">
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                class="create__input"
+                placeholder="My team survey"
               />
-            </svg>
-          </a>
-        </div>
-
-        <div class="create__panel">
-          <div class="create__grid">
-            <!-- Left column -->
-            <div class="create__col">
-              <div class="create__field">
-                <label class="create__label" for="title">
-                  Survey name <span class="create__required">*</span>
-                </label>
-                <div class="create__input-wrap">
-                  <input
-                    id="title"
-                    type="text"
-                    formControlName="title"
-                    class="create__input"
-                    placeholder="My team survey"
-                  />
-                  <button
-                    type="button"
-                    class="icon-btn"
-                    aria-label="Feld leeren"
-                    (click)="form.controls.title.reset()"
-                  >
-                    <img src="/icons/delete.svg" alt="Löschen" width="18" height="20" />
-                  </button>
-                </div>
-                @if (form.controls.title.touched && form.controls.title.invalid) {
-                  <span class="create__error">At least 3 characters required.</span>
-                }
-              </div>
-
-              <div class="create__inline-row">
-                <div class="create__field">
-                  <label class="create__label" for="endDate">
-                    Set end date <span class="create__optional">(optional)</span>
-                  </label>
-                  <div class="create__input-wrap">
-                    <input
-                      id="endDate"
-                      type="date"
-                      formControlName="endDate"
-                      class="create__input"
-                    />
-                    <button
-                      type="button"
-                      class="icon-btn"
-                      aria-label="Datum leeren"
-                      (click)="form.controls.endDate.reset()"
-                    >
-                      <img src="/icons/delete.svg" alt="Löschen" width="18" height="20" />
-                    </button>
-                  </div>
-                </div>
-
-                <div class="create__field">
-                  <label class="create__label" for="category">Choose category</label>
-                  <select id="category" formControlName="categoryId" class="create__input">
-                    <option value="">—</option>
-                    @for (cat of categories(); track cat.id) {
-                      <option [value]="cat.id">{{ cat.name }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
+              <button
+                type="button"
+                class="icon-btn"
+                aria-label="Clear field"
+                (click)="form.controls.title.reset()"
+              >
+                <img src="/icons/delete.svg" alt="Clear" width="18" height="20" />
+              </button>
             </div>
+            @if (form.controls.title.touched && form.controls.title.invalid) {
+              <span class="create__error">At least 3 characters required.</span>
+            }
+          </div>
 
-            <!-- Right column -->
-            <div class="create__field create__field--description">
-              <label class="create__label" for="description">
-                Describing text <span class="create__optional">(optional)</span>
+          <div class="create__inline-row">
+            <div class="create__field">
+              <label class="create__label" for="endDate">
+                Set end date <span class="create__optional">(optional)</span>
               </label>
-              <div class="create__input-wrap create__input-wrap--grow">
-                <textarea
-                  id="description"
-                  formControlName="description"
-                  class="create__input create__input--textarea"
-                ></textarea>
+              <div class="create__input-wrap">
+                <input
+                  id="endDate"
+                  type="date"
+                  formControlName="endDate"
+                  class="create__input"
+                  [min]="today"
+                />
                 <button
                   type="button"
                   class="icon-btn"
-                  aria-label="Feld leeren"
-                  (click)="form.controls.description.reset()"
+                  aria-label="Clear date"
+                  (click)="form.controls.endDate.reset()"
                 >
-                  <img src="/icons/delete.svg" alt="Löschen" width="18" height="20" />
+                  <img src="/icons/delete.svg" alt="Clear" width="18" height="20" />
                 </button>
               </div>
             </div>
-          </div>
 
-          <div class="create__questions-layout" formArrayName="questions">
-            @for (question of questions.controls; track $index; let qi = $index) {
-              <fieldset class="question" [formGroupName]="qi">
-                <div class="question__header">
-                  <span class="question__index">{{ qi + 1 }}. Question</span>
-                  @if (questions.length > 1) {
-                    <button
-                      type="button"
-                      class="icon-btn"
-                      aria-label="Frage entfernen"
-                      (click)="removeQuestion(qi)"
-                    >
-                      <img src="/icons/delete.svg" alt="Löschen" width="18" height="20" />
-                    </button>
-                  }
-                </div>
-                <div class="create__input-wrap">
-                  <input
-                    type="text"
-                    formControlName="text"
-                    class="create__input"
-                    placeholder="Which date would work best for you?"
-                  />
-                  <button
-                    type="button"
-                    class="icon-btn"
-                    aria-label="Frage leeren"
-                    (click)="clearQuestion(qi)"
-                  >
-                    <img src="/icons/delete.svg" alt="Leeren" width="18" height="20" />
-                  </button>
-                </div>
-                @if (question.controls.text.touched && question.controls.text.invalid) {
-                  <span class="create__error">Please enter a question.</span>
+            <div class="create__field">
+              <label class="create__label" for="category">Choose category</label>
+              <select id="category" formControlName="categoryId" class="create__input">
+                <option value="">—</option>
+                @for (category of categories(); track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
                 }
-
-                <div class="question__answers-head">
-                  <span class="create__label">Answers <span class="create__required">*</span></span>
-                  <label class="checkbox">
-                    <input type="checkbox" formControlName="allowMultiple" />
-                    <span>Allow multiple answers.</span>
-                  </label>
-                </div>
-
-                <div class="question__options" formArrayName="options">
-                  @for (opt of options(qi).controls; track $index; let oi = $index) {
-                    <div class="option" [formGroupName]="oi">
-                      <span class="option__letter">{{ letter(oi) }}.</span>
-                      <div class="option__field">
-                        <input
-                          type="text"
-                          formControlName="text"
-                          class="create__input option__input"
-                          [placeholder]="'Answer ' + letter(oi)"
-                        />
-                        @if (opt.controls.text.touched && opt.controls.text.invalid) {
-                          <span class="create__error">Please enter an answer.</span>
-                        }
-                      </div>
-                      @if (options(qi).length > 2) {
-                        <button
-                          type="button"
-                          class="icon-btn"
-                          aria-label="Antwort entfernen"
-                          (click)="removeOption(qi, oi)"
-                        >
-                          <img src="/icons/delete.svg" alt="Löschen" width="18" height="20" />
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-
-                <button type="button" class="link-btn" (click)="addOption(qi)">
-                  Add answer
-                  <img src="/icons/add_circle.svg" alt="Hinzufügen" width="18" height="18" />
-                </button>
-              </fieldset>
-            }
-
-            <div class="create__questions-aside">
-              <button type="button" class="btn btn--secondary" (click)="addQuestion()">
-                Add next question
-                <img src="/icons/add_circle.svg" alt="Hinzufügen" width="18" height="18" />
-              </button>
+              </select>
             </div>
           </div>
         </div>
 
-        @if (error()) {
-          <p class="create__error create__error--block">{{ error() }}</p>
+        <!-- Right column -->
+        <div class="create__field create__field--description">
+          <label class="create__label" for="description">
+            Describing text <span class="create__optional">(optional)</span>
+          </label>
+          <div class="create__input-wrap create__input-wrap--grow">
+            <textarea
+              id="description"
+              formControlName="description"
+              class="create__input create__input--textarea"
+            ></textarea>
+            <button
+              type="button"
+              class="icon-btn"
+              aria-label="Clear field"
+              (click)="form.controls.description.reset()"
+            >
+              <img src="/icons/delete.svg" alt="Clear" width="18" height="20" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="create__questions-layout" formArrayName="questions">
+        @for (question of questions.controls; track $index; let questionIndex = $index) {
+          <fieldset class="question" [formGroupName]="questionIndex">
+            <div class="question__header">
+              <span class="question__index">{{ questionIndex + 1 }}. Question</span>
+              @if (questions.length > 1) {
+                <button
+                  type="button"
+                  class="icon-btn"
+                  aria-label="Remove question"
+                  (click)="removeQuestion(questionIndex)"
+                >
+                  <img src="/icons/delete.svg" alt="Remove" width="18" height="20" />
+                </button>
+              }
+            </div>
+
+            <div class="create__input-wrap">
+              <input
+                type="text"
+                formControlName="text"
+                class="create__input"
+                placeholder="Which date would work best for you?"
+              />
+              <button
+                type="button"
+                class="icon-btn"
+                aria-label="Clear question"
+                (click)="clearQuestion(questionIndex)"
+              >
+                <img src="/icons/delete.svg" alt="Clear" width="18" height="20" />
+              </button>
+            </div>
+            @if (question.controls.text.touched && question.controls.text.invalid) {
+              <span class="create__error">Please enter a question.</span>
+            }
+
+            <div class="question__answers-head">
+              <span class="create__label">Answers <span class="create__required">*</span></span>
+              <label class="checkbox">
+                <input type="checkbox" formControlName="allowMultiple" />
+                <span>Allow multiple answers.</span>
+              </label>
+            </div>
+
+            <div class="question__options" formArrayName="options">
+              @for (option of options(questionIndex).controls; track $index; let optionIndex = $index) {
+                <div class="option" [formGroupName]="optionIndex">
+                  <span class="option__letter">{{ letterFromIndex(optionIndex) }}.</span>
+                  <div class="option__field">
+                    <input
+                      type="text"
+                      formControlName="text"
+                      class="create__input option__input"
+                      [placeholder]="'Answer ' + letterFromIndex(optionIndex)"
+                    />
+                    @if (option.controls.text.touched && option.controls.text.invalid) {
+                      <span class="create__error">Please enter an answer.</span>
+                    }
+                  </div>
+                  @if (options(questionIndex).length > 2) {
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      aria-label="Remove answer"
+                      (click)="removeOption(questionIndex, optionIndex)"
+                    >
+                      <img src="/icons/delete.svg" alt="Remove" width="18" height="20" />
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            <button type="button" class="link-btn" (click)="addOption(questionIndex)">
+              Add answer
+              <img src="/icons/add_circle.svg" alt="Add" width="18" height="18" />
+            </button>
+          </fieldset>
         }
 
-        <div class="create__actions">
-          <button type="submit" class="btn btn--primary" [disabled]="submitting()">
-            {{ submitting() ? 'Publishing…' : 'Publish' }}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M5 12l5 5L20 7"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+        <div class="create__questions-aside">
+          <button type="button" class="btn btn--secondary" (click)="addQuestion()">
+            Add next question
+            <img src="/icons/add_circle.svg" alt="Add" width="18" height="18" />
           </button>
         </div>
       </div>
-    </form>
+    </div>
+
+    @if (error()) {
+      <p class="create__error create__error--block">{{ error() }}</p>
+    }
+
+    <div class="create__actions">
+      <button type="submit" class="btn btn--primary" [disabled]="submitting()">
+        {{ submitting() ? 'Publishing…' : 'Publish' }}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
   </div>
-</div>
+</form>
