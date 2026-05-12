@@ -112,7 +112,7 @@
 }
 
 .detail__desc {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.55;
   margin: 0 0 var(--space-8);
   color: var(--color-text-on-light);
@@ -138,7 +138,7 @@
 
 .qblock__legend {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   margin-bottom: var(--space-1);
   line-height: 1.35;
   padding: 0;
@@ -165,7 +165,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   padding: 4px 0;
 
@@ -229,7 +229,7 @@
   align-items: center;
   gap: var(--space-2);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   padding: 10px 20px;
   border-radius: var(--radius-pill);
   transition: background var(--transition-fast);
@@ -273,7 +273,7 @@
   align-items: center;
   gap: var(--space-2);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--color-text-on-light);
 
   svg {
@@ -323,7 +323,7 @@
 
 .detail__results-empty-lead {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   margin: 0;
   color: var(--color-text-on-light);
   line-height: 1.5;
@@ -332,7 +332,7 @@
 .detail__results-empty-mid {
   text-align: center;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--color-text-on-light);
   margin: 0;
 }

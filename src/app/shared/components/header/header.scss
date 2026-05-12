@@ -19,7 +19,7 @@
   background: var(--color-primary-soft);
   color: var(--color-text-on-light);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   padding: 12px 20px;
   border-radius: var(--radius-sm);
   transition: background var(--transition-fast);
@@ -29,7 +29,7 @@
   }
 
   @media (max-width: 768px) {
-    font-size: 14px;
+    font-size: 16px;
     padding: 10px 16px;
   }
 }

@@ -55,16 +55,6 @@
 
               <div class="create__inline-row">
                 <div class="create__field">
-                  <label class="create__label" for="category">Choose category</label>
-                  <select id="category" formControlName="categoryId" class="create__input">
-                    <option value="">—</option>
-                    @for (cat of categories(); track cat.id) {
-                      <option [value]="cat.id">{{ cat.name }}</option>
-                    }
-                  </select>
-                </div>
-
-                <div class="create__field">
                   <label class="create__label" for="endDate">
                     Set end date <span class="create__optional">(optional)</span>
                   </label>
@@ -84,6 +74,16 @@
                       <img src="/icons/delete.svg" alt="" width="18" height="20" />
                     </button>
                   </div>
+                </div>
+
+                <div class="create__field">
+                  <label class="create__label" for="category">Choose category</label>
+                  <select id="category" formControlName="categoryId" class="create__input">
+                    <option value="">—</option>
+                    @for (cat of categories(); track cat.id) {
+                      <option [value]="cat.id">{{ cat.name }}</option>
+                    }
+                  </select>
                 </div>
               </div>
             </div>
@@ -127,12 +127,25 @@
                     </button>
                   }
                 </div>
-                <input
-                  type="text"
-                  formControlName="text"
-                  class="create__input"
-                  placeholder="Which date would work best for you?"
-                />
+                <div class="create__input-wrap">
+                  <input
+                    type="text"
+                    formControlName="text"
+                    class="create__input"
+                    placeholder="Which date would work best for you?"
+                  />
+                  <button
+                    type="button"
+                    class="icon-btn"
+                    aria-label="Frage leeren"
+                    (click)="question.controls.text.reset()"
+                  >
+                    <img src="/icons/delete.svg" alt="" width="18" height="20" />
+                  </button>
+                </div>
+                @if (question.controls.text.touched && question.controls.text.invalid) {
+                  <span class="create__error">Bitte eine Frage eingeben.</span>
+                }
 
                 <div class="question__answers-head">
                   <span class="create__label">Answers <span class="create__required">*</span></span>

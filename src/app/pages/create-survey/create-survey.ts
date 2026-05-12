@@ -129,7 +129,6 @@ export class CreateSurveyPage {
       const data = await this.surveyService.listCategories();
       this.categories.set(data);
     } catch {
-      // Kategorien sind optional — Fehler hier blockiert das Formular nicht.
     }
   }
 

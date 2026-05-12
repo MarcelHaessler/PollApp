@@ -41,7 +41,6 @@ export class SurveyDetailPage {
   readonly submitting = signal(false);
   readonly showResultsMobile = signal(false);
 
-  // questionId -> Set of selected optionIds
   private selections = signal<Map<string, Set<string>>>(new Map());
 
   readonly published = computed(() => {
@@ -176,7 +175,6 @@ export class SurveyDetailPage {
       const r = await this.surveyService.getResults(s.id);
       this.results.set(r);
     } catch {
-      // schluck Realtime-Refresh-Fehler (Initial-Load-Fehler werden oben gesetzt)
     }
   }
 
