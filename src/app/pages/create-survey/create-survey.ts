@@ -76,6 +76,11 @@ export class CreateSurveyPage {
     this.questions.removeAt(idx);
   }
 
+  clearQuestion(qIdx: number) {
+    this.questions.at(qIdx).controls.text.reset();
+    this.options(qIdx).controls.forEach((opt) => opt.controls.text.reset());
+  }
+
   addOption(qIdx: number) {
     this.options(qIdx).push(this.buildOption());
   }

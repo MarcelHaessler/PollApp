@@ -295,6 +295,13 @@
   font-size: 14px;
 }
 
+.option__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
 .option__input {
   width: 100%;
 }
