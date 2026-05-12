@@ -1,0 +1,45 @@
+name: Deploy to Hetzner
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  web-deploy:
+    name: Build & Sync Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔐 Create environment file
+        run: |
+          cat > src/environments/environment.ts << EOF
+          export const environment = {
+            production: true,
+            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
+            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}'
+          };
+          EOF
+
+      - name: 🏗️ Build Angular app
+        run: npm run build
+
+      - name: 📂 Sync files to Hetzner
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./dist/poll-app/browser/
+          server-dir: /public_html/pollapp/
