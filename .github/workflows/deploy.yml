@@ -51,6 +51,6 @@ jobs:
             set ftp:passive-mode true;
             open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER;
             lcd ./dist/pollApp/browser/;
-            mirror -R --verbose --delete . /public_html/pollapp/;
+            mirror -R --verbose --delete . /pollapp/;
             bye
           "
