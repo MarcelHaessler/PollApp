@@ -107,7 +107,7 @@ export class CreateSurveyPage {
       .filter((q) => q.text.length > 0 && q.options.length >= 2);
 
     if (validQuestions.length === 0) {
-      this.error.set('Bitte mindestens eine Frage mit zwei Antworten anlegen.');
+      this.error.set('Please add at least one question with two answers.');
       return;
     }
 
@@ -123,7 +123,7 @@ export class CreateSurveyPage {
       });
       this.router.navigate(['/survey', surveyId]);
     } catch (e: unknown) {
-      this.error.set(e instanceof Error ? e.message : 'Konnte Umfrage nicht erstellen.');
+      this.error.set(e instanceof Error ? e.message : 'Could not create survey.');
     } finally {
       this.submitting.set(false);
     }

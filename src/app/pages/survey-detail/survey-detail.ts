@@ -121,7 +121,7 @@ export class SurveyDetailPage {
       .filter((a) => a.answerOptionIds.length > 0);
 
     if (answers.length === 0) {
-      this.error.set('Bitte mindestens eine Antwort wählen.');
+      this.error.set('Please select at least one answer.');
       return;
     }
 
@@ -136,7 +136,7 @@ export class SurveyDetailPage {
       this.hasVoted.set(true);
       await this.refreshResults();
     } catch (e: unknown) {
-      this.error.set(e instanceof Error ? e.message : 'Vote fehlgeschlagen.');
+      this.error.set(e instanceof Error ? e.message : 'Vote failed.');
     } finally {
       this.submitting.set(false);
     }
@@ -151,7 +151,7 @@ export class SurveyDetailPage {
         this.surveyService.hasVoted(surveyId, this.voterToken.token),
       ]);
       if (!detail) {
-        this.error.set('Umfrage nicht gefunden.');
+        this.error.set('Survey not found.');
         return;
       }
       this.survey.set(detail);
@@ -162,7 +162,7 @@ export class SurveyDetailPage {
         this.refreshResults();
       });
     } catch (e: unknown) {
-      this.error.set(e instanceof Error ? e.message : 'Fehler beim Laden.');
+      this.error.set(e instanceof Error ? e.message : 'Failed to load survey.');
     } finally {
       this.loading.set(false);
     }
