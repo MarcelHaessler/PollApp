@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🚚 Get latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🟢 Setup Node
         uses: actions/setup-node@v4
@@ -22,17 +22,18 @@ jobs:
         run: npm ci
 
       - name: 🔐 Create environment file
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          cat > src/environments/environment.ts << EOF
-          export const environment = {
-            production: true,
-            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
-            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}'
-          };
-          EOF
+          printf 'export const environment = {\n  production: true,\n  supabaseUrl: "%s",\n  supabaseAnonKey: "%s"\n};\n' \
+            "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > src/environments/environment.ts
 
       - name: 🏗️ Build Angular app
         run: npm run build
+
+      - name: 🔍 Show dist output
+        run: find dist -type d
 
       - name: 📂 Sync files to Hetzner
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
