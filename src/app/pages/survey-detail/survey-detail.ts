@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HeaderComponent } from '../../shared/components/header/header';
 import { ResultsBarsComponent } from '../../shared/components/results-bars/results-bars';
@@ -28,7 +28,6 @@ import {
 })
 export class SurveyDetailPage {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private surveyService = inject(SurveyService);
   private voterToken = inject(VoterTokenService);
   private destroyRef = inject(DestroyRef);
@@ -53,7 +52,9 @@ export class SurveyDetailPage {
   readonly isEnded = computed(() => {
     const s = this.survey();
     if (!s?.endDate) return false;
-    return new Date(s.endDate).getTime() <= Date.now();
+    const end = new Date(s.endDate);
+    end.setHours(23, 59, 59, 999);
+    return end.getTime() < Date.now();
   });
 
   readonly canVote = computed(() => !this.hasVoted() && !this.isEnded());

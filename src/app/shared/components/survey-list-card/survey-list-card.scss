@@ -4,7 +4,7 @@
   background: var(--color-bg-elevated);
   color: var(--color-text-on-dark);
   padding: var(--space-5) var(--space-6);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xs) var(--radius-xl) var(--radius-xs) var(--radius-xs);
   text-decoration: none;
   transition: transform var(--transition-medium), background var(--transition-fast);
 

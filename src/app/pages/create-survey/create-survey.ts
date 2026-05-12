@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   FormArray,
@@ -33,6 +34,7 @@ export class CreateSurveyPage {
   private fb = inject(FormBuilder);
   private surveyService = inject(SurveyService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   readonly categories = signal<Category[]>([]);
   readonly submitting = signal(false);
@@ -47,6 +49,9 @@ export class CreateSurveyPage {
   });
 
   constructor() {
+    const html = inject(DOCUMENT).documentElement;
+    html.style.background = '#ffffff';
+    this.destroyRef.onDestroy(() => (html.style.background = ''));
     this.loadCategories();
   }
 
