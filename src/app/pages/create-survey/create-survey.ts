@@ -1,16 +1,24 @@
 import { Component, inject, output, signal } from '@angular/core';
 import {
+  AbstractControl,
   FormArray,
   FormBuilder,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators,
 } from '@angular/forms';
 import { SurveyService } from '../../core/services/survey.service';
 import { Category, CreateSurveyInput } from '../../core/models/survey.model';
 
 const ASCII_A = 65;
+const TODAY = new Date().toISOString().split('T')[0];
+
+function minDateValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value) return null;
+  return control.value >= TODAY ? null : { minDate: true };
+}
 
 interface OptionForm {
   text: FormControl<string>;
@@ -39,12 +47,12 @@ export class CreateSurveyComponent {
   readonly categories = signal<Category[]>([]);
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
-  readonly today = new Date().toISOString().split('T')[0];
+  readonly today = TODAY;
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
     categoryId: [''],
-    endDate: [''],
+    endDate: ['', minDateValidator],
     description: [''],
     questions: this.fb.array<FormGroup<QuestionForm>>([this.buildQuestion()]),
   });

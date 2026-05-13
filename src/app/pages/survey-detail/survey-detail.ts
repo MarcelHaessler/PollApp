@@ -13,7 +13,7 @@ import { SurveyService } from '../../core/services/survey.service';
 
 const ASCII_A = 65;
 import { VoterTokenService } from '../../core/services/voter-token.service';
-import { Question, QuestionResult, SurveyDetail, VoteInput } from '../../core/models/survey.model';
+import { OptionResult, Question, QuestionResult, SurveyDetail, VoteInput } from '../../core/models/survey.model';
 
 @Component({
   selector: 'app-survey-detail',
@@ -54,9 +54,39 @@ export class SurveyDetailPage implements OnInit, OnDestroy {
 
   readonly canVote = computed(() => !this.hasVoted() && !this.isEnded());
 
+  readonly displayResults = computed((): Map<string, QuestionResult> => {
+    const actual = this.results();
+    if (!this.canVote()) return actual;
+    const selections = this.selections();
+    if (selections.size === 0) return actual;
+    const survey = this.survey();
+    if (!survey) return actual;
+
+    const preview = new Map(actual);
+    for (const question of survey.questions) {
+      const selectedIds = selections.get(question.id);
+      if (!selectedIds || selectedIds.size === 0) continue;
+      const actualResult = actual.get(question.id);
+      const newTotal = (actualResult?.totalVotes ?? 0) + 1;
+      const options: OptionResult[] = question.options.map((opt) => {
+        const current = actualResult?.options.find((r) => r.answerOptionId === opt.id)?.voteCount ?? 0;
+        const votes = current + (selectedIds.has(opt.id) ? 1 : 0);
+        return {
+          answerOptionId: opt.id,
+          optionPosition: opt.position,
+          optionText: opt.text,
+          voteCount: votes,
+          percentage: Math.round((votes / newTotal) * 100),
+        };
+      });
+      preview.set(question.id, { questionId: question.id, totalVotes: newTotal, options });
+    }
+    return preview;
+  });
+
   readonly totalVotes = computed(() => {
     let total = 0;
-    for (const result of this.results().values()) total += result.totalVotes;
+    for (const result of this.displayResults().values()) total += result.totalVotes;
     return total;
   });
 

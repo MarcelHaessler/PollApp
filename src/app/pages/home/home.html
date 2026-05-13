@@ -27,7 +27,13 @@
     <h1 class="hero__title heading-display--xl">
       Collect Feedback,<br />Unlock Ideas
     </h1>
-    <img class="hero__illu" src="/img/phone.png" alt="PollApp on a smartphone" />
+    <div class="hero__illu" role="img" aria-label="PollApp on a smartphone">
+      <img class="hero__phone" src="/img/phone.png" alt="" />
+      <img class="hero__bubble"   src="/img/typing%20bubble.svg" alt="" aria-hidden="true" />
+      <img class="hero__question" src="/img/Questin%20mark.svg"  alt="" aria-hidden="true" />
+      <img class="hero__star"     src="/img/star.svg"            alt="" aria-hidden="true" />
+      <img class="hero__check"    src="/img/check.svg"           alt="" aria-hidden="true" />
+    </div>
     <div class="hero__copy">
       <p class="hero__lead">
         Create and share surveys in minutes — from team events to workplace
@@ -73,7 +79,7 @@
             [value]="selectedCategory() ?? ''"
             (change)="onCategoryChange($any($event.target).value)"
           >
-            <option value="">Sort by categories</option>
+            <option value="">All</option>
             @for (category of categories(); track category) {
               <option [value]="category">{{ category }}</option>
             }

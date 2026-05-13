@@ -1,6 +1,6 @@
 .survey-card {
-  display: block;
-  position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   text-align: left;
   border: none;
@@ -27,7 +27,7 @@
   display: block;
   color: var(--color-primary);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 16px;
   margin-bottom: var(--space-2);
 }
 
@@ -35,19 +35,18 @@
   font-family: var(--font-body);
   font-weight: 800;
   font-size: 18px;
-  margin: 0 0 var(--space-5);
+  margin: 0 0 var(--space-4);
   line-height: 1.3;
-  padding-right: 110px;
+  flex: 1;
+  overflow-wrap: anywhere;
 }
 
 .survey-card__badge {
-  position: absolute;
-  bottom: var(--space-5);
-  right: var(--space-5);
+  align-self: flex-end;
   background: var(--color-primary-soft);
   color: var(--color-text-on-light);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 16px;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
 }

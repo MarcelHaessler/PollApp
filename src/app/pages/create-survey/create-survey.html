@@ -64,6 +64,9 @@
                   <img src="/icons/delete.svg" alt="Clear" width="18" height="20" />
                 </button>
               </div>
+              @if (form.controls.endDate.touched && form.controls.endDate.invalid) {
+                <span class="create__error">Please enter a valid future date.</span>
+              }
             </div>
 
             <div class="create__field">
