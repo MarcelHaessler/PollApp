@@ -1,11 +1,12 @@
-<a
-  [routerLink]="['/survey', survey().id]"
+<button
+  type="button"
   class="highlight-card"
   [class.highlight-card--alt]="variant() === 'cream-alt'"
+  (click)="selected.emit(survey().id)"
 >
   <span class="highlight-card__category">{{ survey().categoryName }}</span>
   <h3 class="highlight-card__title">{{ survey().title }}</h3>
   @if (survey().endDate) {
     <span class="highlight-card__badge">{{ survey().endDate | endsIn }}</span>
   }
-</a>
+</button>

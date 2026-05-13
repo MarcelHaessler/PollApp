@@ -1,9 +1,3 @@
-:host {
-  display: block;
-  min-height: 100vh;
-  background: var(--color-bg-white);
-}
-
 .detail {
   max-width: var(--container-max);
   margin: 0 auto;
@@ -24,7 +18,12 @@
 }
 
 .link-back {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
   text-decoration: underline;
+  color: inherit;
 }
 
 .detail__layout {
@@ -117,6 +116,7 @@
   margin: 0 0 var(--space-8);
   color: var(--color-text-on-light);
   max-width: 60ch;
+  overflow-wrap: break-word;
 }
 
 .detail__questions {

@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { Question, QuestionResult } from '../../../core/models/survey.model';
+
+const ASCII_A = 65;
 
 @Component({
   selector: 'app-results-bars',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './results-bars.html',
   styleUrl: './results-bars.scss',
 })
@@ -13,7 +14,7 @@ export class ResultsBarsComponent {
   readonly results = input.required<Map<string, QuestionResult>>();
 
   letter(idx: number): string {
-    return String.fromCharCode(65 + idx);
+    return String.fromCharCode(ASCII_A + idx);
   }
 
   totalVotes(): number {

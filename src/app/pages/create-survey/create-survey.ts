@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
+import { Component, inject, output, signal } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -9,6 +9,8 @@ import {
 } from '@angular/forms';
 import { SurveyService } from '../../core/services/survey.service';
 import { Category, CreateSurveyInput } from '../../core/models/survey.model';
+
+const ASCII_A = 65;
 
 interface OptionForm {
   text: FormControl<string>;
@@ -24,7 +26,6 @@ interface QuestionForm {
   selector: 'app-create-survey',
   standalone: true,
   imports: [ReactiveFormsModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './create-survey.html',
   styleUrl: './create-survey.scss',
 })
@@ -61,7 +62,7 @@ export class CreateSurveyComponent {
   }
 
   letterFromIndex(index: number): string {
-    return String.fromCharCode(65 + index);
+    return String.fromCharCode(ASCII_A + index);
   }
 
   addQuestion(): void {

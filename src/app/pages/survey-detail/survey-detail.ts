@@ -1,33 +1,34 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   inject,
+  input,
+  OnDestroy,
+  OnInit,
+  output,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HeaderComponent } from '../../shared/components/header/header';
 import { ResultsBarsComponent } from '../../shared/components/results-bars/results-bars';
 import { SurveyService } from '../../core/services/survey.service';
+
+const ASCII_A = 65;
 import { VoterTokenService } from '../../core/services/voter-token.service';
 import { Question, QuestionResult, SurveyDetail, VoteInput } from '../../core/models/survey.model';
 
 @Component({
   selector: 'app-survey-detail',
   standalone: true,
-  imports: [HeaderComponent, ResultsBarsComponent, RouterLink],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ResultsBarsComponent],
   templateUrl: './survey-detail.html',
   styleUrl: './survey-detail.scss',
 })
-export class SurveyDetailPage {
-  private route = inject(ActivatedRoute);
+export class SurveyDetailPage implements OnInit, OnDestroy {
   private surveyService = inject(SurveyService);
   private voterToken = inject(VoterTokenService);
-  private destroyRef = inject(DestroyRef);
   private unsubscribe?: () => void;
+
+  readonly id = input.required<string>();
+  readonly closed = output();
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -44,9 +45,11 @@ export class SurveyDetailPage {
   readonly isEnded = computed(() => {
     const survey = this.survey();
     if (!survey?.endDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const endDate = new Date(survey.endDate);
-    endDate.setHours(23, 59, 59, 999);
-    return endDate.getTime() < Date.now();
+    endDate.setHours(0, 0, 0, 0);
+    return endDate < today;
   });
 
   readonly canVote = computed(() => !this.hasVoted() && !this.isEnded());
@@ -57,14 +60,12 @@ export class SurveyDetailPage {
     return total;
   });
 
-  constructor() {
-    this.route.paramMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(async (params) => {
-        const id = params.get('id');
-        if (id) await this.load(id);
-      });
-    this.destroyRef.onDestroy(() => this.unsubscribe?.());
+  ngOnInit(): void {
+    this.load(this.id());
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe?.();
   }
 
   isSelected(questionId: string, optionId: string): boolean {
@@ -86,7 +87,7 @@ export class SurveyDetailPage {
   }
 
   letterFromIndex(index: number): string {
-    return String.fromCharCode(65 + index);
+    return String.fromCharCode(ASCII_A + index);
   }
 
   toggleMobileResults(): void {

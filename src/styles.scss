@@ -18,6 +18,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.no-scroll {
+  overflow: hidden;
+}
+
 a {
   color: inherit;
   text-decoration: none;

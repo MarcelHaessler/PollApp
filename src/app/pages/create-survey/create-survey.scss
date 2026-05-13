@@ -3,9 +3,14 @@
   color: var(--color-text-on-dark);
   border-radius: var(--radius-sm) var(--radius-card-curve) var(--radius-sm) var(--radius-sm);
   padding: var(--space-8);
+  min-width: 0;
 
-  @media (max-width: 768px) {
+  @media (max-width: 960px) {
     padding: var(--space-6) var(--space-5);
+  }
+
+  @media (max-width: 400px) {
+    padding: var(--space-4) var(--space-3);
   }
 }
 
@@ -59,8 +64,12 @@
   border-radius: var(--radius-md);
   padding: var(--space-6);
 
-  @media (max-width: 768px) {
+  @media (max-width: 960px) {
     padding: var(--space-5);
+  }
+
+  @media (max-width: 400px) {
+    padding: var(--space-3);
   }
 }
 
@@ -70,7 +79,7 @@
   gap: var(--space-10);
   margin-bottom: var(--space-8);
 
-  @media (max-width: 768px) {
+  @media (max-width: 960px) {
     grid-template-columns: 1fr;
   }
 }
@@ -79,6 +88,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  min-width: 0;
 }
 
 .create__inline-row {
@@ -86,7 +96,7 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
 
-  @media (max-width: 480px) {
+  @media (max-width: 600px) {
     grid-template-columns: 1fr;
   }
 }
@@ -95,6 +105,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
 
   input,
   select {
@@ -132,6 +143,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .create__label {
@@ -192,7 +204,7 @@
   gap: var(--space-10);
   align-items: start;
 
-  @media (max-width: 768px) {
+  @media (max-width: 960px) {
     grid-template-columns: 1fr;
   }
 }
@@ -208,6 +220,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .question__header {
@@ -340,7 +353,7 @@
   justify-content: flex-end;
   padding-top: var(--space-8);
 
-  @media (max-width: 768px) {
+  @media (max-width: 960px) {
     justify-content: center;
     padding-top: var(--space-6);
   }

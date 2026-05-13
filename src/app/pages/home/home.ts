@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { HeaderComponent } from '../../shared/components/header/header';
 import { HighlightCardComponent } from '../../shared/components/highlight-card/highlight-card';
 import { SurveyListCardComponent } from '../../shared/components/survey-list-card/survey-list-card';
 import { TabItem, TabsComponent } from '../../shared/components/tabs/tabs';
 import { CreateSurveyComponent } from '../create-survey/create-survey';
+import { SurveyDetailPage } from '../survey-detail/survey-detail';
 import { SurveyService } from '../../core/services/survey.service';
 import { Survey } from '../../core/models/survey.model';
 
@@ -19,14 +20,14 @@ type Tab = 'active' | 'past';
     SurveyListCardComponent,
     TabsComponent,
     CreateSurveyComponent,
+    SurveyDetailPage,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class HomePage {
   private surveyService = inject(SurveyService);
-  private router = inject(Router);
+  private document = inject(DOCUMENT);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -34,6 +35,7 @@ export class HomePage {
   readonly activeTab = signal<Tab>('active');
   readonly selectedCategory = signal<string | null>(null);
   readonly showCreateModal = signal(false);
+  readonly selectedSurveyId = signal<string | null>(null);
 
   readonly tabs: TabItem<Tab>[] = [
     { id: 'active', label: 'Active survey' },
@@ -83,15 +85,28 @@ export class HomePage {
 
   openModal(): void {
     this.showCreateModal.set(true);
+    this.document.body.classList.add('no-scroll');
   }
 
   closeModal(): void {
     this.showCreateModal.set(false);
+    if (!this.selectedSurveyId()) this.document.body.classList.remove('no-scroll');
   }
 
   onSurveyCreated(surveyId: string): void {
     this.closeModal();
-    this.router.navigate(['/survey', surveyId]);
+    this.openSurvey(surveyId);
+    this.loadSurveys();
+  }
+
+  openSurvey(id: string): void {
+    this.selectedSurveyId.set(id);
+    this.document.body.classList.add('no-scroll');
+  }
+
+  closeSurvey(): void {
+    this.selectedSurveyId.set(null);
+    if (!this.showCreateModal()) this.document.body.classList.remove('no-scroll');
   }
 
   onTabChange(tab: Tab): void {
@@ -108,9 +123,11 @@ export class HomePage {
 
   private isEnded(survey: Survey): boolean {
     if (!survey.endDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const endDate = new Date(survey.endDate);
-    endDate.setHours(23, 59, 59, 999);
-    return endDate.getTime() < Date.now();
+    endDate.setHours(0, 0, 0, 0);
+    return endDate < today;
   }
 
   private sortByEndDate = (a: Survey, b: Survey): number => {

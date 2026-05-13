@@ -11,6 +11,17 @@
   </div>
 }
 
+@if (selectedSurveyId()) {
+  <div class="modal-overlay" (click)="closeSurvey()">
+    <div class="modal-content modal-content--detail" (click)="$event.stopPropagation()">
+      <app-survey-detail
+        [id]="selectedSurveyId()!"
+        (closed)="closeSurvey()"
+      />
+    </div>
+  </div>
+}
+
 <main class="home">
   <section class="hero">
     <h1 class="hero__title heading-display--xl">
@@ -45,7 +56,11 @@
         <h3 class="surveys__subheading">Ending soon surveys</h3>
         <div class="highlights">
           @for (survey of endingSoon(); track survey.id; let index = $index) {
-            <app-highlight-card [survey]="survey" [variant]="highlightVariant(index)" />
+            <app-highlight-card
+              [survey]="survey"
+              [variant]="highlightVariant(index)"
+              (selected)="openSurvey($event)"
+            />
           }
         </div>
       }
@@ -93,6 +108,7 @@
               <app-survey-list-card
                 [survey]="survey"
                 [disabled]="activeTab() === 'past'"
+                (selected)="openSurvey($event)"
               />
             </li>
           }

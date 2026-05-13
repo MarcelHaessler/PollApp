@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LogoComponent } from '../logo/logo';
 
@@ -6,7 +6,6 @@ import { LogoComponent } from '../logo/logo';
   selector: 'app-header',
   standalone: true,
   imports: [RouterLink, LogoComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })

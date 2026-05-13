@@ -24,7 +24,11 @@
 
 .heading-display--xl {
   @extend .heading-display;
-  font-size: clamp(40px, 6vw, 64px);
+  font-size: 100px;
+
+  @media (max-width: 768px) {
+    font-size: 64px;
+  }
 }
 
 .heading-display--lg {
